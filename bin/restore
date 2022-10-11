@@ -1,0 +1,66 @@
+#!/bin/bash
+set -e
+
+function usage(){
+echo "
+    Usage: restore <type> <wp_dir> <backup>
+
+    A Wordpress restore tool.
+
+    type:
+        db          restore database
+        wp          restore wordpress
+
+    wp_dir:
+        path to wordpress installation directory
+
+    backup:
+        path to backup file be restore
+"
+}
+
+
+
+restore_type="$1"
+restore_fn=""
+case "$1" in 
+
+    "db") 
+    restore_fn=restore_db
+    ;;
+    "wp") 
+    restore_fn=restore_wp
+    ;;
+    *)
+    echo "Error: Invalid restore type"
+    exit 1
+    ;;
+esac
+
+wp_dir="$2"
+wp_backup="$3"
+db_backup="$3"
+
+
+
+function restore_db(){
+    gzip -c -d "$db_backup" | wp db import --path="$wp_dir" -
+}
+
+function restore_wp(){
+    tar -xzvf "$wp_backup" -c "$wp_dir"
+}
+
+
+function restore_invalid(){
+    echo "Invalid restore type!"
+    exit 1
+}
+
+echo "Restoring..."
+$restore_fn
+echo "Done!"
+
+
+
+

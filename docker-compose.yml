@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  wp:
+    image: wordpress
+    restart: always
+    ports:
+      - 80:80
+    env_file:
+      - wp.env
+    depends_on:
+      - db
+    volumes:
+      - wp-data:/var/www/html
+
+  db:
+    image: mariadb
+    restart: always
+    env_file:
+      - db.env
+    volumes:
+      - db-data:/var/lib/mysql
+
+  cli:
+    image: wordpress:cli
+    restart: never
+    env_file:
+      - wp.env
+    user: "33:33"
+    volumes:
+      - wp-data:/var/www/html
+      - ./backups:/var/backups
+      - ./bin/backup:/usr/local/bin/backup:ro
+      - ./bin/restore:/usr/local/bin/restore:ro
+    profiles:
+      - cli
+
+volumes:
+  db-data:
+  wp-data:

@@ -1,0 +1,78 @@
+#!/bin/bash
+set -e
+
+function usage(){
+echo "
+    Usage: backup <type> <wp_dir> <backup_dir>
+    
+    A Wordpress backup tool.
+    
+    type:
+        full        full backup include database and wordpress files
+        db          backup database only
+        wp          backup wordpress files only
+
+    wp_dir:
+        path to wordpress installation directory
+
+    backup_dir:
+        path to save backups directory
+"
+}
+
+if [ "$#" -ne 3 ]
+then
+    echo "Error: Wrong parameters!"
+    usage
+    exit
+fi
+
+# check backup type
+backup_type="$1"
+backup_fn=backup_invalid
+case "$backup_type" in
+    "full") backup_fn=backup_full
+    ;;
+    "db") backup_fn=backup_db
+    ;;
+    "wp") backup_fn=backup_wp
+    ;;
+    *)
+    echo "Error: Invalid backup type!"
+    exit 1
+    ;;
+esac
+
+wp_dir="$2"
+backup_dir="$3"
+
+# construct backup file name
+backup_date=$(date +"%Y%m%d_%H%M%S")
+wp_backup="$backup_dir/wp-$backup_date.tar.gz"
+db_backup="$backup_dir/db-$backup_date.sql.gz"
+
+backup_db(){
+    wp db export --path="$wp_dir" - | gzip > "$db_backup"
+}
+
+backup_wp(){
+    tar --create --gzip \
+        --file="$wp_backup" \
+        --directory="$wp_dir" .
+}
+
+backup_full(){
+    backup_db
+    backup_wp
+}
+
+backup_invalid(){
+    echo "Invalid backup type!"
+    exit 1
+}
+
+echo "Backuping..."
+$backup_fn
+echo "Done!"
+    
+    
