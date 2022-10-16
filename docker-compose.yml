@@ -23,7 +23,7 @@ services:
 
   cli:
     image: wordpress:cli
-    restart: never
+    restart: "no"
     env_file:
       - wp.env
     user: "33:33"

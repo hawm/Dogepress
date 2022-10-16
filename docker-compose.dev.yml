@@ -1,9 +1,13 @@
 services:
   wp:
+    restart: "no"
     env_file:
       - wp.dev.env
     volumes:
       - ./plugins:/var/www/html/wp-content/plugins
+
+  db:
+    restart: "no"
 
   cli:
     env_file:
